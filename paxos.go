@@ -1,7 +1,5 @@
-package main
+package paxos
 
-import "fmt"
-
-func main(){
-	fmt.Printf("Hello, Paxos!\n")
+func paxos(){
+	return
 }
