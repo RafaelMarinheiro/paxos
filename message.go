@@ -1,32 +1,60 @@
 package paxos
 
+import "fmt"
+
+type Addr uint
+
 type MessageType int
 
-const(
-	_ , _ MessageType = iota, -iota
-	prepare, rejectPrepare
-	promise, rejectPromise
-	accept, _
-	accepted, notAccepted
-	propose, rejectPropose
+const (
+	propose       MessageType = iota // Ask the proposer to propose something
+	prepare                          // Proposer asks Acceptor to prepare
+	promise                          // Acceptor promises Proposer
+	refusePromise                    // Acceptor denies Proposal
+	acceptRequest                    // Proposer request Acceptor to learn avalue
+	accept                           // Acceptor accepts value and broadcast the message
+	refuseAccept                     // Acceptor denies Accept
 )
 
-type nodeinfo struct{
-	addr int
+func (m MessageType) String() string {
+	switch m {
+	case propose:
+		return "propose"
+	case prepare:
+		return "prepare"
+	case promise:
+		return "promise"
+	case acceptRequest:
+		return "acceptRequest"
+	case accept:
+		return "accept"
+	default:
+		return "???"
+	}
 }
 
-type Message struct{
-	From int
-	To int
-	mtype MessageType
-	proposeNumber int64
-	proposeValue int64
+type Proposal struct {
+	promise int64
+	number  int64
+	key     string
+	value   string
 }
 
-type Network interface{
-	//Send a message to a node
-	Send(Message)
+func nullProposal(key string) Proposal {
+	return Proposal{promise: -1, number: -1, key: key}
+}
 
-	//Receive a message from a noide
-	Receive() Message
+type Message struct {
+	From     Addr
+	To       Addr
+	mtype    MessageType
+	proposal Proposal
+}
+
+func (p Proposal) String() string {
+	return fmt.Sprintf("Proposal(%d, %d, %s, %s)", p.promise, p.number, p.key, p.value)
+}
+
+func (m Message) String() string {
+	return fmt.Sprintf("Message(From: %d, To: %d\n\ttype: %s\n\t%s", m.From, m.To, m.mtype.String(), m.proposal.String())
 }
